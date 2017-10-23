@@ -10,6 +10,7 @@ import (
 	e "github.com/ipfs/go-ipfs/core/commands/e"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
 	decision "github.com/ipfs/go-ipfs/exchange/bitswap/decision"
+	provider "github.com/ipfs/go-ipfs/exchange/providers"
 
 	"gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	cmds "gx/ipfs/QmUEB5nT4LG3TkUd5mkHrfRESUSgaUD4r7jSAYvvPeuWT9/go-ipfs-cmds"
@@ -163,6 +164,14 @@ var bitswapStatCmd = &cmds.Command{
 			return
 		}
 
+		// ProvideBuf has been moved out of bitswap
+		ps, err := nd.Providers.Stat()
+		if err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
+		st.ProvideBufLen = ps.ProvideBufLen
+
 		cmds.EmitOnce(res, st)
 	},
 	Encoders: cmds.EncoderMap{
@@ -173,7 +182,7 @@ var bitswapStatCmd = &cmds.Command{
 			}
 
 			fmt.Fprintln(w, "bitswap status")
-			fmt.Fprintf(w, "\tprovides buffer: %d / %d\n", out.ProvideBufLen, bitswap.HasBlockBufferSize)
+			fmt.Fprintf(w, "\tprovides buffer: %d / %d\n", out.ProvideBufLen, provider.HasBlockBufferSize)
 			fmt.Fprintf(w, "\tblocks received: %d\n", out.BlocksReceived)
 			fmt.Fprintf(w, "\tblocks sent: %d\n", out.BlocksSent)
 			fmt.Fprintf(w, "\tdata received: %d\n", out.DataReceived)

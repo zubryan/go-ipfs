@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ipfs/go-ipfs/blocks/blockstore"
+	blockstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	exchange "github.com/ipfs/go-ipfs/exchange"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
 
@@ -51,6 +51,7 @@ type BlockService interface {
 type blockService struct {
 	blockstore blockstore.Blockstore
 	exchange   exchange.Interface
+
 	// If checkFirst is true then first check that a block doesn't
 	// already exist to avoid republishing the block on the exchange.
 	checkFirst bool
