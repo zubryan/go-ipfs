@@ -142,7 +142,7 @@ into an object of the specified format.
 
 				cids.ForEach(func(c *cid.Cid) error {
 					n.Pinning.PinWithMode(c, pin.Recursive)
-					return nil
+					return n.Providers.Provide(c)
 				})
 
 				err := n.Pinning.Flush()
