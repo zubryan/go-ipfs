@@ -254,8 +254,10 @@ You can now check what blocks have been created by:
 
 		exch := n.Exchange
 		local, _ := req.Options["local"].(bool)
+		prov := n.Providers
 		if local {
 			exch = offline.Exchange(addblockstore)
+			prov = offline.Providers()
 		}
 
 		bserv := blockservice.New(addblockstore, exch)
@@ -263,7 +265,7 @@ You can now check what blocks have been created by:
 
 		outChan := make(chan interface{}, adderOutChanSize)
 
-		fileAdder, err := coreunix.NewAdder(req.Context, n.Pinning, n.Blockstore, dserv)
+		fileAdder, err := coreunix.NewAdder(req.Context, n.Pinning, n.Blockstore, dserv, prov)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
