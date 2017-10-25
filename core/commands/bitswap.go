@@ -10,7 +10,7 @@ import (
 	e "github.com/ipfs/go-ipfs/core/commands/e"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
 	decision "github.com/ipfs/go-ipfs/exchange/bitswap/decision"
-	provider "github.com/ipfs/go-ipfs/exchange/providers"
+	provider "github.com/ipfs/go-ipfs/providers"
 
 	"gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	cmds "gx/ipfs/QmUEB5nT4LG3TkUd5mkHrfRESUSgaUD4r7jSAYvvPeuWT9/go-ipfs-cmds"
