@@ -144,6 +144,7 @@ func (adder *Adder) add(reader io.Reader) (node.Node, error) {
 
 	params := ihelper.DagBuilderParams{
 		Dagserv:   adder.dagService,
+		Provider:  adder.provide,
 		RawLeaves: adder.RawLeaves,
 		Maxlinks:  ihelper.DefaultLinksPerBlock,
 		NoCopy:    adder.NoCopy,
