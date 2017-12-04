@@ -2,7 +2,6 @@ package io
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -11,6 +10,8 @@ import (
 
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 	"github.com/ipfs/go-ipfs/unixfs"
+
+	context "context"
 
 	testu "github.com/ipfs/go-ipfs/unixfs/test"
 )
