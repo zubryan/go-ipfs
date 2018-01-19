@@ -182,6 +182,17 @@ var rootROOldSubcommands = map[string]*oldcmds.Command{
 	"refs":    RefsROCmd,
 	"resolve": ResolveCmd,
 	"version": VersionCmd,
+	"dht": &oldcmds.Command{
+		Subcommands: map[string]*oldcmds.Command{
+			"findprovs": findProvidersDhtCmd,
+			"findpeer":  findPeerDhtCmd,
+		},
+	},
+	"swarm": &oldcmds.Command{
+		Subcommands: map[string]*oldcmds.Command{
+			"connect": swarmConnectCmd,
+		},
+	},
 }
 
 func init() {
