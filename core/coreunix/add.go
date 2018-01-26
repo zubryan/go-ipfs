@@ -155,7 +155,14 @@ func (adder *Adder) add(reader io.Reader) (ipld.Node, error) {
 }
 
 // RootNode returns the root node of the Added.
-func (adder *Adder) RootNode() (ipld.Node, error) {
+func (adder *Adder) RootNode() (root ipld.Node, err error) {
+	eip := log.EventBegin(adder.ctx, "RootNode")
+	defer func() {
+		if root != nil {
+			eip.Append(root.Cid())
+		}
+		eip.DoneWithErr(err)
+	}()
 	// for memoizing
 	if adder.root != nil {
 		return adder.root, nil
@@ -165,19 +172,17 @@ func (adder *Adder) RootNode() (ipld.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	root, err := mr.GetValue().GetNode()
+	root, err = mr.GetValue().GetNode()
 	if err != nil {
 		return nil, err
 	}
 
 	// if not wrapping, AND one root file, use that hash as root.
 	if !adder.Wrap && len(root.Links()) == 1 {
-		nd, err := root.Links()[0].GetNode(adder.ctx, adder.dagService)
+		root, err = root.Links()[0].GetNode(adder.ctx, adder.dagService)
 		if err != nil {
 			return nil, err
 		}
-
-		root = nd
 	}
 
 	adder.root = root
@@ -186,11 +191,16 @@ func (adder *Adder) RootNode() (ipld.Node, error) {
 
 // Recursively pins the root node of Adder and
 // writes the pin state to the backing datastore.
-func (adder *Adder) PinRoot() error {
+func (adder *Adder) PinRoot() (err error) {
+	eip := log.EventBegin(adder.ctx, "PinRoot")
+	defer func() {
+		eip.DoneWithErr(err)
+	}()
 	root, err := adder.RootNode()
 	if err != nil {
 		return err
 	}
+	eip.Append(root.Cid())
 	if !adder.Pin {
 		return nil
 	}
@@ -211,11 +221,21 @@ func (adder *Adder) PinRoot() error {
 	}
 
 	adder.pinning.PinWithMode(rnk, pin.Recursive)
-	return adder.pinning.Flush()
+	if err = adder.pinning.Flush(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Finalize flushes the mfs root directory and returns the mfs root node.
-func (adder *Adder) Finalize() (ipld.Node, error) {
+func (adder *Adder) Finalize() (node ipld.Node, err error) {
+	eip := log.EventBegin(adder.ctx, "Finalize")
+	defer func() {
+		if node != nil {
+			eip.Append(node.Cid())
+		}
+		eip.DoneWithErr(err)
+	}()
 	mr, err := adder.mfsRoot()
 	if err != nil {
 		return nil, err
@@ -235,7 +255,8 @@ func (adder *Adder) Finalize() (ipld.Node, error) {
 		}
 
 		if len(children) == 0 {
-			return nil, fmt.Errorf("expected at least one child dir, got none")
+			err = fmt.Errorf("expected at least one child dir, got none")
+			return nil, err
 		}
 
 		name = children[0]
@@ -247,7 +268,8 @@ func (adder *Adder) Finalize() (ipld.Node, error) {
 
 		dir, ok := mr.GetValue().(*mfs.Directory)
 		if !ok {
-			return nil, fmt.Errorf("root is not a directory")
+			err = fmt.Errorf("root is not a directory")
+			return nil, err
 		}
 
 		root, err = dir.Child(name)
@@ -266,7 +288,11 @@ func (adder *Adder) Finalize() (ipld.Node, error) {
 		return nil, err
 	}
 
-	return root.GetNode()
+	node, err = root.GetNode()
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 func (adder *Adder) outputDirs(path string, fsn mfs.FSNode) error {
@@ -426,7 +452,12 @@ func (adder *Adder) addNode(node ipld.Node, path string) error {
 }
 
 // AddFile adds the given file while respecting the adder.
-func (adder *Adder) AddFile(file files.File) error {
+func (adder *Adder) AddFile(file files.File) (err error) {
+	eip := log.EventBegin(adder.ctx, "AddFile")
+	defer func() {
+		eip.Append(logging.LoggableMap{"file": file.FileName()})
+		eip.DoneWithErr(err)
+	}()
 	if adder.Pin {
 		adder.unlocker = adder.blockstore.PinLock()
 	}
@@ -436,7 +467,10 @@ func (adder *Adder) AddFile(file files.File) error {
 		}
 	}()
 
-	return adder.addFile(file)
+	if err = adder.addFile(file); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (adder *Adder) addFile(file files.File) error {
