@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"sync"
@@ -181,7 +180,6 @@ func makeExecutor(req *cmds.Request, env interface{}) (cmds.Executor, error) {
 		exctr = client.(cmds.Executor)
 	} else {
 		cctx := env.(*oldcmds.Context)
-		pluginpath := filepath.Join(cctx.ConfigRoot, "plugins")
 
 		// check if repo is accessible before loading plugins
 		ok, err := checkPermissions(cctx.ConfigRoot)
@@ -189,7 +187,7 @@ func makeExecutor(req *cmds.Request, env interface{}) (cmds.Executor, error) {
 			return nil, err
 		}
 		if ok {
-			if _, err := loader.LoadPlugins(pluginpath); err != nil {
+			if _, err := loader.LoadPlugins(cctx.ConfigRoot); err != nil {
 				log.Warning("error loading plugins: ", err)
 			}
 		}

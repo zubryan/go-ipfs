@@ -3,6 +3,7 @@ package loader
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ipfs/go-ipfs/plugin"
 
@@ -16,13 +17,14 @@ var loadPluginsFunc = func(string) ([]plugin.Plugin, error) {
 }
 
 // LoadPlugins loads and initializes plugins.
-func LoadPlugins(pluginDir string) ([]plugin.Plugin, error) {
+func LoadPlugins(configDir string) ([]plugin.Plugin, error) {
 	plMap := make(map[string]plugin.Plugin)
 	for _, v := range preloadPlugins {
 		plMap[v.Name()] = v
 	}
 
-	newPls, err := loadDynamicPlugins(pluginDir)
+	pluginpath := filepath.Join(configDir, "plugins")
+	newPls, err := loadDynamicPlugins(pluginpath)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func LoadPlugins(pluginDir string) ([]plugin.Plugin, error) {
 		pls = append(pls, v)
 	}
 
-	err = initialize(pls)
+	err = initialize(configDir, pls)
 	if err != nil {
 		return nil, err
 	}

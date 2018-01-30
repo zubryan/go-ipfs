@@ -32,7 +32,7 @@ func (*gitPlugin) Version() string {
 	return "0.0.1"
 }
 
-func (*gitPlugin) Init() error {
+func (*gitPlugin) Init(config string) error {
 	return nil
 }
 

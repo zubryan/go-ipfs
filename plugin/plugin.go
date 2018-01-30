@@ -8,5 +8,5 @@ type Plugin interface {
 	// Version returns current version of the plugin
 	Version() string
 	// Init is called once when the Plugin is being loaded
-	Init() error
+	Init(config string) error
 }

@@ -8,9 +8,9 @@ import (
 	ipld "gx/ipfs/Qme5bWv7wtjUNGsK2BNGVUFPKiuxWrsqrtvYwCLRw8YFES/go-ipld-format"
 )
 
-func initialize(plugins []plugin.Plugin) error {
+func initialize(configDir string, plugins []plugin.Plugin) error {
 	for _, p := range plugins {
-		err := p.Init()
+		err := p.Init(configDir)
 		if err != nil {
 			return err
 		}
@@ -40,12 +40,7 @@ func run(plugins []plugin.Plugin) error {
 }
 
 func runIPLDPlugin(pl plugin.PluginIPLD) error {
-	err := pl.RegisterBlockDecoders(format.DefaultBlockDecoder)
-	if err != nil {
-		return err
-	}
-
-	err := ipldpl.RegisterBlockDecoders(ipld.DefaultBlockDecoder)
+	err := pl.RegisterBlockDecoders(ipld.DefaultBlockDecoder)
 	if err != nil {
 		return err
 	}
