@@ -124,7 +124,7 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 		return nil, err
 	}
 
-	return ParseCid(dagnode.Cid()), nil
+	return api.ParseCid(dagnode.Cid()), nil
 }
 
 func (api *ObjectAPI) Get(ctx context.Context, path coreiface.Path) (coreiface.Node, error) {
@@ -221,7 +221,7 @@ func (api *ObjectAPI) AddLink(ctx context.Context, base coreiface.Path, name str
 		return nil, err
 	}
 
-	return ParseCid(nnode.Cid()), nil
+	return api.ParseCid(nnode.Cid()), nil
 }
 
 func (api *ObjectAPI) RmLink(ctx context.Context, base coreiface.Path, link string) (coreiface.Path, error) {
@@ -247,7 +247,7 @@ func (api *ObjectAPI) RmLink(ctx context.Context, base coreiface.Path, link stri
 		return nil, err
 	}
 
-	return ParseCid(nnode.Cid()), nil
+	return api.ParseCid(nnode.Cid()), nil
 }
 
 func (api *ObjectAPI) AppendData(ctx context.Context, path coreiface.Path, r io.Reader) (coreiface.Path, error) {
@@ -284,7 +284,7 @@ func (api *ObjectAPI) patchData(ctx context.Context, path coreiface.Path, r io.R
 		return nil, err
 	}
 
-	return ParseCid(pbnd.Cid()), nil
+	return api.ParseCid(pbnd.Cid()), nil
 }
 
 func (api *ObjectAPI) core() coreiface.CoreAPI {
