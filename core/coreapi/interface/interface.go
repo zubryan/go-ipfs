@@ -280,6 +280,10 @@ type ObjectAPI interface {
 	// * "base64"
 	WithDataType(t string) options.ObjectPutOption
 
+	// WithPin is an option for Put which specifies whether to pin the added
+	// objects, default is false
+	WithPin(bool) options.ObjectPutOption
+
 	// Get returns the node for the path
 	Get(context.Context, Path) (Node, error)
 
