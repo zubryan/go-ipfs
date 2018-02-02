@@ -319,10 +319,16 @@ func (api *ObjectAPI) Diff(ctx context.Context, before coreiface.Path, after cor
 	out := make([]coreiface.ObjectChange, len(changes))
 	for i, change := range changes {
 		out[i] = coreiface.ObjectChange{
-			Type:   change.Type,
-			Path:   change.Path,
-			Before: api.ParseCid(change.Before),
-			After:  api.ParseCid(change.After),
+			Type: change.Type,
+			Path: change.Path,
+		}
+
+		if change.Before != nil {
+			out[i].Before = api.ParseCid(change.Before)
+		}
+
+		if change.After != nil {
+			out[i].After = api.ParseCid(change.After)
 		}
 	}
 
