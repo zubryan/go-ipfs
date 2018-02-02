@@ -58,6 +58,38 @@ type BlockStat interface {
 	Path() Path
 }
 
+const (
+	// DiffAdd is a Type of ObjectChange where a link was added to the graph
+	DiffAdd = iota
+
+	// DiffRemove is a Type of ObjectChange where a link was removed from the graph
+	DiffRemove
+
+	// DiffMod is a Type of ObjectChange where a link was changed in the graph
+	DiffMod
+)
+
+// ObjectChange represents a change ia a graph
+// TODO: do we want this to be an interface?
+type ObjectChange struct {
+	// Type of the change, either:
+	// * DiffAdd - Added a link
+	// * DiffRemove - Removed a link
+	// * DiffMod - Modified a link
+	Type int
+
+	// Path to the changed link
+	Path string
+
+	// Before holds the link path before the change. Note that when a link is
+	// added, this will be nil.
+	Before Path
+
+	// After holds the link path after the change. Note that when a link is
+	// removed, this will be nil.
+	After Path
+}
+
 // CoreAPI defines an unified interface to IPFS for Go programs.
 type CoreAPI interface {
 	// Unixfs returns an implementation of Unixfs API.
@@ -313,6 +345,10 @@ type ObjectAPI interface {
 
 	// SetData sets the data contained in the node
 	SetData(context.Context, Path, io.Reader) (Path, error)
+
+	// Diff returns a set of changes needed to transform the first object into the
+	// second.
+	Diff(context.Context, Path, Path) ([]ObjectChange, error)
 }
 
 // ObjectStat provides information about dag nodes
