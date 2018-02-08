@@ -16,15 +16,26 @@ import (
 
 // Path is a generic wrapper for paths used in the API. A path can be resolved
 // to a CID using one of Resolve functions in the API.
+// TODO: figure out/explain namespaces
 type Path interface {
 	// String returns the path as a string.
 	String() string
+
+	// Namespace returns the first component of the path
+	Namespace() string
+}
+
+// ResolvedPath is a resolved Path
+type ResolvedPath interface {
 	// Cid returns cid referred to by path
 	Cid() *cid.Cid
+
 	// Root returns cid of root path
 	Root() *cid.Cid
-	// Resolved returns whether path has been fully resolved
-	Resolved() bool
+
+	//TODO: Path remainder
+
+	Path
 }
 
 // TODO: should we really copy these?
@@ -61,7 +72,7 @@ type BlockStat interface {
 // Pin holds information about pinned resource
 type Pin interface {
 	// Path to the pinned object
-	Path() Path
+	Path() ResolvedPath
 
 	// Type of the pin
 	Type() string
@@ -79,7 +90,7 @@ type PinStatus interface {
 // BadPinNode is a node that has been marked as bad by Pin.Verify
 type BadPinNode interface {
 	// Path is the path of the node
-	Path() Path
+	Path() ResolvedPath
 
 	// Err is the reason why the node has been marked as bad
 	Err() error
@@ -101,33 +112,31 @@ type CoreAPI interface {
 
 	// Key returns an implementation of Key API.
 	Key() KeyAPI
+
+	// Pin returns an implementation of Pin API
 	Pin() PinAPI
 
 	// ObjectAPI returns an implementation of Object API
 	Object() ObjectAPI
 
 	// ResolvePath resolves the path using Unixfs resolver
-	ResolvePath(context.Context, Path) (Path, error)
+	ResolvePath(context.Context, Path) (ResolvedPath, error)
 
 	// ResolveNode resolves the path (if not resolved already) using Unixfs
 	// resolver, gets and returns the resolved Node
 	ResolveNode(context.Context, Path) (Node, error)
 
 	// ParsePath parses string path to a Path
-	ParsePath(context.Context, string, ...options.ParsePathOption) (Path, error)
-
-	// WithResolve is an option for ParsePath which when set to true tells
-	// ParsePath to also resolve the path
-	WithResolve(bool) options.ParsePathOption
+	ParsePath(string) (Path, error)
 
 	// ParseCid creates new path from the provided CID
-	ParseCid(*cid.Cid) Path
+	ParseCid(*cid.Cid) ResolvedPath
 }
 
 // UnixfsAPI is the basic interface to immutable files in IPFS
 type UnixfsAPI interface {
 	// Add imports the data from the reader into merkledag file
-	Add(context.Context, io.Reader) (Path, error)
+	Add(context.Context, io.Reader) (ResolvedPath, error)
 
 	// Cat returns a reader for the file
 	Cat(context.Context, Path) (Reader, error)
@@ -139,7 +148,7 @@ type UnixfsAPI interface {
 // BlockAPI specifies the interface to the block layer
 type BlockAPI interface {
 	// Put imports raw block data, hashing it using specified settings.
-	Put(context.Context, io.Reader, ...options.BlockPutOption) (Path, error)
+	Put(context.Context, io.Reader, ...options.BlockPutOption) (ResolvedPath, error)
 
 	// WithFormat is an option for Put which specifies the multicodec to use to
 	// serialize the object. Default is "v0"
@@ -173,7 +182,7 @@ type DagAPI interface {
 	// Put inserts data using specified format and input encoding.
 	// Unless used with WithCodec or WithHash, the defaults "dag-cbor" and
 	// "sha256" are used.
-	Put(ctx context.Context, src io.Reader, opts ...options.DagPutOption) (Path, error)
+	Put(ctx context.Context, src io.Reader, opts ...options.DagPutOption) (ResolvedPath, error)
 
 	// WithInputEnc is an option for Put which specifies the input encoding of the
 	// data. Default is "json", most formats/codecs support "raw"
@@ -290,13 +299,13 @@ type ObjectAPI interface {
 	WithType(string) options.ObjectNewOption
 
 	// Put imports the data into merkledag
-	Put(context.Context, io.Reader, ...options.ObjectPutOption) (Path, error)
+	Put(context.Context, io.Reader, ...options.ObjectPutOption) (ResolvedPath, error)
 
 	// WithInputEnc is an option for Put which specifies the input encoding of the
 	// data. Default is "json".
 	//
 	// Supported encodings:
-	// * "protobuf"
+	// * "protobuf"reselved version of Path
 	// * "json"
 	WithInputEnc(e string) options.ObjectPutOption
 
@@ -323,20 +332,20 @@ type ObjectAPI interface {
 	// AddLink adds a link under the specified path. child path can point to a
 	// subdirectory within the patent which must be present (can be overridden
 	// with WithCreate option).
-	AddLink(ctx context.Context, base Path, name string, child Path, opts ...options.ObjectAddLinkOption) (Path, error)
+	AddLink(ctx context.Context, base Path, name string, child Path, opts ...options.ObjectAddLinkOption) (ResolvedPath, error)
 
 	// WithCreate is an option for AddLink which specifies whether create required
 	// directories for the child
 	WithCreate(create bool) options.ObjectAddLinkOption
 
 	// RmLink removes a link from the node
-	RmLink(ctx context.Context, base Path, link string) (Path, error)
+	RmLink(ctx context.Context, base Path, link string) (ResolvedPath, error)
 
 	// AppendData appends data to the node
-	AppendData(context.Context, Path, io.Reader) (Path, error)
+	AppendData(context.Context, Path, io.Reader) (ResolvedPath, error)
 
 	// SetData sets the data contained in the node
-	SetData(context.Context, Path, io.Reader) (Path, error)
+	SetData(context.Context, Path, io.Reader) (ResolvedPath, error)
 }
 
 // ObjectStat provides information about dag nodes
